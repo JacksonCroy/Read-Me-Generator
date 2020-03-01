@@ -1,5 +1,7 @@
 const inquirer = require("inquirer")
 const axios = require("axios")
+const generateMarkdown = require("./utils/generateMarkdown")
+const fs = require("fs")
 
 const questions = [{
         type: "input",
@@ -49,38 +51,40 @@ const questions = [{
 ];
 
 
-inquirer
-    .prompt(questions).then(function(response) {
-        const queryUrl = `https://api.github.com/users/${response.username}?client_id=${
-        process.env.CLIENT_ID
-        }&client_secret=${process.env.CLIENT_SECRET}`;
-        axios
-            .get(queryUrl)
-            .then(function(data) {
-                console.log(data)
 
-                generateMarkdown(data);
-                // for (let i = 0; i < data.data.length; i++) {
-                //     console.log(data.data[i].name)
+function writeToFile(data, response) {
+    fs.writeFile("readme.md", generateMarkdown(data, response), function(err) {
 
-                //     names.push(data.data[i].name).join("\n")
-                //     console.log(names)
+        if (err) {
+            return console.log(err);
+        }
 
+        console.log("Success!");
 
+    });
 
-
-                // }
-
-            });
-
-
-        console.log(response.username)
-
-    })
-
-function writeToFile(fileName, data) {}
+}
 
 function init() {
+    inquirer
+        .prompt(questions).then(function(response) {
+            const queryUrl = `https://api.github.com/users/${response.username}?client_id=${
+                process.env.CLIENT_ID
+                }&client_secret=${process.env.CLIENT_SECRET}`;
+            axios
+                .get(queryUrl)
+                .then(function(data) {
+                    console.log(data)
+
+                    writeToFile(data, response);
+
+
+                });
+
+
+            console.log(response)
+
+        })
 
 }
 
